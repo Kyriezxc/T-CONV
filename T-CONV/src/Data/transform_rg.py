@@ -288,7 +288,7 @@ if __name__ == '__main__':
      missing_data_, first_k_latitude_, first_k_longitude_, last_k_latitude_, \
      last_k_longitude_, dest_latitude_, dest_longitude_] = valid_stream.get_data_batch(50)
 
-    print 'valid set ...'
+    print("valid set ...")
     for i in range(len(trip_id_)):
         x = ()
         x += (trip_id_[i],)
