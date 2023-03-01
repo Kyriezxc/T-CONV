@@ -5,7 +5,7 @@ import sys
 import h5py
 import numpy
 import random
-import Data as data
+import data
 import random
 
 taxi_id_dict = {}     #a map from taxiid->0,1,2,3,....
@@ -34,10 +34,11 @@ def get_unique_origin_call(val):
     else:
         origin_call_dict[val] = len(origin_call_dict)
         return len(origin_call_dict) - 1
- 
+
 def convert_test_taxis(input_directory, h5file):
- 
+
     size=getattr(data, 'test_size')
+    #size=320
 
     trip_id = numpy.empty(shape=(size,), dtype='S19')
     call_type = numpy.empty(shape=(size,), dtype=numpy.int8)
@@ -50,8 +51,10 @@ def convert_test_taxis(input_directory, h5file):
     latitude = numpy.empty(shape=(size,), dtype=h5py.special_dtype(vlen=numpy.float32))
     longitude = numpy.empty(shape=(size,), dtype=h5py.special_dtype(vlen=numpy.float32))
     with open(input_directory, 'r') as f:
-        reader = csv.reader(f)
-        reader.next() # header
+        reader = list(csv.reader(f))
+        #print(list(reader)[0])
+        #reader.next() # header
+        reader = reader[1:]
         id=0
         for line in reader:
             if id%10000==0 and id!=0:
@@ -65,11 +68,11 @@ def convert_test_taxis(input_directory, h5file):
             day_type[id] = ord(line[6][0]) - ord('A')
             missing_data[id] = line[7][0] == 'T'
             polyline = ast.literal_eval(line[8])
-	    print(polyline)
+            print(polyline)
             latitude[id] = numpy.array([point[1] for point in polyline], dtype=numpy.float32)
             longitude[id] = numpy.array([point[0] for point in polyline], dtype=numpy.float32)
             id+=1
-    
+
 
     for name in ['trip_id', 'call_type', 'origin_call', 'origin_stand', 'taxi_id', 'timestamp', 'day_type', 'missing_data', 'latitude', 'longitude']:
         h5file.create_dataset('test_%s' % name, data = locals()[name])
@@ -77,7 +80,8 @@ def convert_test_taxis(input_directory, h5file):
 
 def convert_train_taxis(input_directory, h5file):
     #print >> sys.stderr, 'read %s: begin' % dataset
-    size=getattr(data, 'train_size')
+    #size=getattr(data, 'train_size')
+    size=1710670
 
     trip_id = numpy.empty(shape=(size,), dtype='S19')
     call_type = numpy.empty(shape=(size,), dtype=numpy.int8)
@@ -104,23 +108,25 @@ def convert_train_taxis(input_directory, h5file):
     valid_dest_longitude = numpy.empty(shape=(size,),dtype=numpy.float32)
 
     with open(input_directory, 'r') as f:
-        reader = csv.reader(f)
-        reader.next() # header
+        reader = list(csv.reader(f))
+        #print(list(reader)[0])
+        #reader.next() # header
+        reader = reader[1:]
         t_id=0
         v_id=0
         for line in reader:
             if t_id%10000==0 and t_id!=0:
                 print >> sys.stderr, 'read : %d done' % t_id
-            
+
             time = round(float(line[5]))
             polyline = ast.literal_eval(line[8])
             sel = False
-            for ts in cuts:            
+            for ts in cuts:
                 if time <= ts and time + 15 * (len(polyline) - 1) >= ts:
                     # keep it
                     sel = True
                     n = int((ts - time) / 15) + 1
-                
+
                     valid_trip_id[v_id] = line[0]
                     valid_call_type[v_id] = ord(line[1][0]) - ord('A')
                     valid_origin_call[v_id] = 0 if line[2]=='NA' or line[2]=='' else get_unique_origin_call(int(line[2]))
@@ -129,7 +135,7 @@ def convert_train_taxis(input_directory, h5file):
                     valid_timestamp[v_id] = int(line[5])
                     valid_day_type[v_id] = ord(line[6][0]) - ord('A')
                     valid_missing_data[v_id] = line[7][0] == 'T'
-                   
+
                     valid_latitude[v_id] = numpy.array([point[1] for point in polyline[:n]], dtype=numpy.float32)
                     valid_longitude[v_id] = numpy.array([point[0] for point in polyline[:n]], dtype=numpy.float32)
                     valid_dest_latitude[v_id] = polyline[-1][1]
@@ -150,8 +156,8 @@ def convert_train_taxis(input_directory, h5file):
                 latitude[t_id] = numpy.array([point[1] for point in polyline], dtype=numpy.float32)
                 longitude[t_id] = numpy.array([point[0] for point in polyline], dtype=numpy.float32)
                 t_id += 1
- 
-    print t_id, v_id
+
+    print (t_id, v_id)
     for name in ['trip_id', 'call_type', 'origin_call', 'origin_stand', 'taxi_id', 'timestamp', 'day_type', 'missing_data', 'latitude', 'longitude']:
         h5file.create_dataset('train_%s' % name, data = locals()[name][:t_id] )
     for name in ['valid_trip_id', 'valid_call_type', 'valid_origin_call', 'valid_origin_stand', 'valid_taxi_id', 'valid_timestamp', 'valid_day_type', 'valid_missing_data', 'valid_latitude', 'valid_longitude', 'valid_dest_latitude', 'valid_dest_longitude']:
@@ -175,19 +181,18 @@ def convert_stands(input_directory, h5file):
     for name in ['stands_name','stands_latitude','stands_longitude']:
         h5file.create_dataset('%s' % name, data = locals()[name])
 
- 
+
 
 def convert(input_file,save_file):
     h5file = h5py.File(save_file, 'w')
-    convert_train_taxis(input_file, h5file) 
-     
-    #convert_test_taxis(test_file, h5file) 
-    #convert_taxis(input_directory, h5file, 'test')
-    #convert_stands(input_directory, h5file)
+    #convert_train_taxis(input_file, h5file)
+
+    convert_test_taxis(input_file, h5file)
+    #convert_taxis(input_file, h5file, 'test')
+    #convert_stands(input_file, h5file)
 
     h5file.flush()
     h5file.close()
 
 if __name__ == '__main__':
-   
-    convert(sys.argv[1], sys.argv[2])
+    convert("/Users/zepuwang/Downloads/pkdd-15-predict-taxi-service-trajectory-i/train.csv", "/Users/zepuwang/Downloads/pkdd-15-predict-taxi-service-trajectory-i/train.h5")
