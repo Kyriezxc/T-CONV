@@ -37,8 +37,8 @@ def get_unique_origin_call(val):
 
 def convert_test_taxis(input_directory, h5file):
 
-    size=getattr(data, 'test_size')
-    #size=320
+    #size=getattr(data, 'test_size')
+    size=320
 
     trip_id = numpy.empty(shape=(size,), dtype='S19')
     call_type = numpy.empty(shape=(size,), dtype=numpy.int8)
@@ -116,7 +116,7 @@ def convert_train_taxis(input_directory, h5file):
         v_id=0
         for line in reader:
             if t_id%10000==0 and t_id!=0:
-                print >> sys.stderr, 'read : %d done' % t_id
+                print(sys.stderr, 'read : %d done' % t_id)
 
             time = round(float(line[5]))
             polyline = ast.literal_eval(line[8])
@@ -185,9 +185,9 @@ def convert_stands(input_directory, h5file):
 
 def convert(input_file,save_file):
     h5file = h5py.File(save_file, 'w')
-    #convert_train_taxis(input_file, h5file)
+    convert_train_taxis(input_file, h5file)
 
-    convert_test_taxis(input_file, h5file)
+    #convert_test_taxis(input_file, h5file)
     #convert_taxis(input_file, h5file, 'test')
     #convert_stands(input_file, h5file)
 
