@@ -270,9 +270,9 @@ if __name__ == '__main__':
      last_k_longitude_, dest_latitude_, dest_longitude_] = train_stream.get_data_batch(50)
 
     (x, y) = train_stream.get_data_batch_mlp(50)
-    print len(x[0]), len(y[0])
+    print(len(x[0]), len(y[0]))
 
-    print 'training set ...'
+    print('training set ...')
     for i in range(len(trip_id_)):
         x = ()
         x += (trip_id_[i],)
