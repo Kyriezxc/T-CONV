@@ -2,8 +2,8 @@ import datetime
 import numpy
 from load_dataset import Dataset
 import sys
-import theano
-import Data as data
+#import theano
+#import Data as data
 
 import h5py
 import numpy
@@ -16,7 +16,7 @@ train_size=1720000
 
 def at_least_k(k, v, pad_at_begin, is_longitude):
     if len(v) == 0:
-        v = numpy.array([data.valid_gps_mean[1 if is_longitude else 0]], dtype=theano.config.floatX)
+        v = numpy.array([train_gps_mean[1 if is_longitude else 0]])
     if len(v) < k:
         if pad_at_begin:
             v = numpy.concatenate((numpy.full((k - len(v),), v[0], numpy.float32), v))
@@ -26,10 +26,10 @@ def at_least_k(k, v, pad_at_begin, is_longitude):
 
 
 def transfer_pos(latitude, longitude, dim):
-    min_latitude = data.train_gps_mean[0] - data.train_gps_std[0]
-    max_latitude = data.train_gps_mean[0] + data.train_gps_std[0]
-    min_longtitude = data.train_gps_mean[1] - data.train_gps_std[1]
-    max_longtitude = data.train_gps_mean[1] + data.train_gps_std[1]
+    min_latitude = train_gps_mean[0] - train_gps_std[0]
+    max_latitude = train_gps_mean[0] + train_gps_std[0]
+    min_longtitude = train_gps_mean[1] - train_gps_std[1]
+    max_longtitude = train_gps_mean[1] + train_gps_std[1]
 
     dev_latitude = (max_latitude - min_latitude) / dim
     dev_longtitude = (max_longtitude - min_longtitude) / dim
@@ -67,6 +67,7 @@ class Stream(object):
 
         self.id = -1
         self.size = len(self.latitude)
+        #print(len(self.latitude))
 
         self.max_splits = 100
         self.splits = []
@@ -84,9 +85,9 @@ class Stream(object):
 
     def normalize(self, traj, islatitude):
         if islatitude == True:
-            return (traj - data.train_gps_mean[0]) / data.train_gps_std[0]
+            return (traj - train_gps_mean[0]) / train_gps_std[0]
         else:
-            return (traj - data.train_gps_mean[1]) / data.train_gps_std[1]
+            return (traj - train_gps_mean[1]) / train_gps_std[1]
 
     def get_all_data_conv(self, batchsize):
         datas = []
@@ -154,9 +155,10 @@ class Stream(object):
 
     def get_sample_data(self, k,
                         bnormalize=True):  # get a row of the data, and the sub-traj with randomized length is selected
+        print(len(self.list))
         while self.isplit >= len(self.splits):
             if self.id < self.size - 1:
-                # print(self.list[0])
+                print(self.point)
                 self.id = self.list[self.point]
                 self.point += 1
                 if (self.point % 1000 == 0):
@@ -211,8 +213,8 @@ class Stream(object):
 
         for i in range(batchsize):
             [trip_id_[i], call_type_[i], origin_call_[i], origin_stand_[i], taxi_id_[i], timestamp_[i], \
-             day_type_[i], missing_data_[i], snapshot_[i], dest_latitude_[i],
-             dest_longitude_[i]] = self.get_sample_data(self.k, bnormalize)
+            day_type_[i], missing_data_[i], snapshot_[i], dest_latitude_[i],
+            dest_longitude_[i]] = self.get_sample_data(self.k, bnormalize)
 
         return trip_id_, call_type_, origin_call_, origin_stand_, taxi_id_, timestamp_, day_type_, missing_data_, \
                snapshot_, dest_latitude_, dest_longitude_
@@ -257,11 +259,11 @@ class Stream(object):
 
 
 if __name__ == '__main__':
-    if len(sys.argv) != 2:
-        print >> sys.stderr, 'Usage: %s file_path' % sys.argv[0]
-        sys.exit(1)
-    file_path = sys.argv[1]
-    dataset = Dataset(file_path)
+    # if len(sys.argv) != 2:
+    #     print(sys.stderr, 'Usage: %s file_path' % sys.argv[0])
+    #     sys.exit(1)
+    #file_path = '/Users/xinchengzhu/Downloads/'
+    dataset = Dataset()
     [trip_id, call_type, origin_call, origin_stand, taxi_id, \
      timestamp, day_type, missing_data, latitude, longitude] = dataset.load_taxi_data_train()
 
@@ -306,4 +308,4 @@ if __name__ == '__main__':
             x += (last_k_latitude_[i][j], last_k_longitude_[i][j])
 
         x += (dest_latitude_[i], dest_longitude_[i])
-        # print x
+        print(x)

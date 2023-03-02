@@ -103,8 +103,8 @@ class Dataset(object):
         print("valid_dest size is %s" % valid_trip_id.shape)
         print("finish load vaild dataset")
         return valid_trip_id, valid_call_type, valid_origin_call, valid_origin_stand, valid_taxi_id, \
-               valid_timestamp, valid_day_type, valid_missing_data, valid_latitude, valid_longitude, \
-               valid_dest_latitude, valid_dest_longitude
+               valid_timestamp, valid_day_type, valid_missing_data, valid_latitude, valid_longitude
+        #valid_dest_latitude, valid_dest_longitude
 
 
 
