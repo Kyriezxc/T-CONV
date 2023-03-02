@@ -4,16 +4,21 @@ import os
 import sys
 
 import h5py
-import numpy 
-
+import numpy
+path = '/Users/xinchengzhu/Downloads/'
+Polyline = h5py.special_dtype(vlen=numpy.float32)
+stands_size = 1 # include 0 ("no origin_stands")
+train_gps_mean = numpy.array([41.1573, -8.61612], dtype=numpy.float32) #the center point of map
+train_gps_std = numpy.sqrt(numpy.array([0.00549598, 0.00333233], dtype=numpy.float32)) #the 1/4 square of the map
+train_size=1720000
 
 class Dataset (object):
     def __init__(self, file_path,log_path):
         print(file_path)
         self.h5file = h5py.File(os.path.join(file_path,'mydata_backup.hdf5'), 'r') 
-        self.size = 16000 #len(self.h5file['train_trip_id'])
+        self.size = 1600000 #len(self.h5file['train_trip_id'])
         self.start= 0
-        self.piece = 16000
+        self.piece = 1600000
         self.end = self.start+ self.piece
         self.logf = open(log_path, 'w')
         

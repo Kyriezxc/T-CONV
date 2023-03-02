@@ -2,24 +2,31 @@ import ast
 import csv
 import os
 import sys
-import Config as config
+#import Config as config
 import h5py
 import numpy
-import Data as data
-import matplotlib
+#import Data as data
+#import matplotlib
 import matplotlib.pyplot as plt
 import pandas as pd
 
+path = '/Users/xinchengzhu/Downloads/'
+Polyline = h5py.special_dtype(vlen=numpy.float32)
+stands_size = 1 # include 0 ("no origin_stands")
+train_gps_mean = numpy.array([41.1573, -8.61612], dtype=numpy.float32) #the center point of map
+train_gps_std = numpy.sqrt(numpy.array([0.00549598, 0.00333233], dtype=numpy.float32)) #the 1/4 square of the map
+train_size=1720000
 
 class Dataset(object):
-    def __init__(self, file_path, log_path):
-        print (file_path)
-        self.h5file = h5py.File(os.path.join(file_path, 'mydata.hdf5'), 'r')
-        self.size = 16000  # len(self.h5file['train_trip_id'])
+    def __init__(self):
+        file_path = '/Users/xinchengzhu/Downloads/'
+        log_path = '/Users/xinchengzhu/Downloads/'
+        self.h5file = h5py.File('/Users/xinchengzhu/Downloads/train.h5', 'r')
+        self.size = 1600000  # len(self.h5file['train_trip_id'])
         self.start = 0
-        self.piece = 16000
+        self.piece = 1600000
         self.end = self.start + self.piece
-        self.logf = open(log_path, 'w')
+        #self.logf = open(log_path, 'w')
         self.list = []
         self.rng = numpy.random.RandomState(12345)
 
@@ -37,8 +44,8 @@ class Dataset(object):
         train_longitude = self.h5file['train_longitude'][self.start:self.end]
 
         print('finish loading ...%09d - %09d' % (self.start, self.end))
-        self.logf.write('finish loading ...%09d - %09d \r\n' % (self.start, self.end))
-        self.logf.flush()
+        #self.logf.write('finish loading ...%09d - %09d \r\n' % (self.start, self.end))
+        #self.logf.flush()
         self.start = (self.start + self.piece) % self.size
         self.end = (self.end + self.piece) % self.size
         if self.end == 0:
@@ -55,10 +62,10 @@ class Dataset(object):
         row = (80)
         col = (50)
         weight_matrix = numpy.zeros(shape=(row, col))
-        dev_latitude = (data.train_gps_std[0]) / (row / 2)  # 8000/40=200m each cell.
-        dev_longitude = (data.train_gps_std[1]) / (col / 2)  # 5000/25=200m
-        lefttop_x = data.train_gps_mean[0] - data.train_gps_std[0]
-        lefttop_y = data.train_gps_mean[1] - data.train_gps_std[1]
+        dev_latitude = (train_gps_std[0]) / (row / 2)  # 8000/40=200m each cell.
+        dev_longitude = (train_gps_std[1]) / (col / 2)  # 5000/25=200m
+        lefttop_x = train_gps_mean[0] - train_gps_std[0]
+        lefttop_y = train_gps_mean[1] - train_gps_std[1]
 
         for i in range(len(train_latitude)):
             if (i % 10000 == 0):
@@ -98,3 +105,10 @@ class Dataset(object):
         return valid_trip_id, valid_call_type, valid_origin_call, valid_origin_stand, valid_taxi_id, \
                valid_timestamp, valid_day_type, valid_missing_data, valid_latitude, valid_longitude, \
                valid_dest_latitude, valid_dest_longitude
+
+
+
+if __name__ == '__main__':
+    a = Dataset()
+    print(a.load_taxi_data_valid())
+
