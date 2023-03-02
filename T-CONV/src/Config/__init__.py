@@ -1,5 +1,5 @@
 import os
-import cPickle
+import _pickle as cPickle
 
 # from blocks.initialization import IsotropicGaussian, Constant
 # from blocks.algorithms import Momentum

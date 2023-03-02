@@ -11,9 +11,9 @@ class Dataset (object):
     def __init__(self, file_path,log_path):
         print(file_path)
         self.h5file = h5py.File(os.path.join(file_path,'mydata_backup.hdf5'), 'r') 
-        self.size = 287 #len(self.h5file['train_trip_id'])
+        self.size = 16000 #len(self.h5file['train_trip_id'])
         self.start= 0
-        self.piece = 287
+        self.piece = 16000
         self.end = self.start+ self.piece
         self.logf = open(log_path, 'w')
         
