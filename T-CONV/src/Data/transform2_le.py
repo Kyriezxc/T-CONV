@@ -2,7 +2,6 @@ import datetime
 import numpy
 from load_dataset import Dataset
 import sys
-import fuel
 import Data as data
 
 
@@ -26,7 +25,7 @@ class Stream(object):
         self.max_splits = 100
         self.splits = []
         self.isplit = 0
-        self.rng = numpy.random.RandomState(fuel.config.default_seed)
+        self.rng = numpy.random.RandomState(123)
         self.k = 5
         self.conv_dim = 30
         self.epoch = 0
